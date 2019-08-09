@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="board">
+  <select id="list" resultType="board.dto.BoardDTO">
+    select*from board
+  </select>
+  
+  <insert id="insert">
+    insert into board
+(num,writer,subject,passwd,ref,re_step,re_level,content,ip,filename,filesize) 
+values
+( (select nvl(max(num)+1,1) from board)
+  ,#{writer},#{subject},#{passwd}
+  ,(select nvl(max(num)+1,1) from board)
+  ,1,0,#{content},#{ip},#{filename}, #{filesize})
+  </insert>
+  
+  <select id="getFileName" resultType="String">
+     select filename
+		from board
+		where num=#{num}
+  </select>
+  
+  <update id="plusDown">
+    update board set down=down+1 where num=#{num}
+  </update>
+
+  <select id="view" resultType="board.dto.BoardDTO">
+		select * from board
+		where num=#{num}
+  </select>
+  
+  <update id="plusReadCount">
+      update board set readcount=readcount+1 
+      where num=#{num}
+  </update>
+  
+  <select id="commentList" resultType="board.dto.BoardCommentDTO">
+      select * from board_comment
+		where board_num=#{num}
+  </select>
+  
+  <insert id="commentAdd">
+    insert into board_comment
+	(comment_num,board_num,writer,content) values
+	((select nvl(max(comment_num)+1,1) from board_comment)
+	, #{board_num}, #{writer}, #{content})
+  </insert>
+  
+  <update id="updateStep">
+     update board 
+     set re_step=re_step+1
+     where ref=#{ref} and re_step >= #{re_step}
+  </update>
+  
+  <insert id="reply">
+     insert into board
+	(num,writer,subject,passwd,ref,re_step,re_level,
+	content,ip,filename,filesize) 
+	values
+	( (select nvl(max(num)+1,1) from board)
+  	,#{writer},#{subject},#{passwd}
+  	,#{ref}, #{re_step}, #{re_level}
+ 	,#{content},#{ip},#{filename}, #{filesize})
+  </insert>
+  
+  <select id="pass_check" resultType="String">
+    select passwd from board
+	where num=#{num} and passwd=#{passwd}
+  </select>
+  
+	<update id="update">
+		update board
+		set writer=#{writer}, subject=#{subject}
+			, content=#{content}, filename=#{filename}
+			, filesize=#{filesize}, down=#{down}
+		where num=#{num}
+	</update>
+	
+	<update id="delete">
+	    update board set show='n'
+	    where num=#{num}
+	</update>
+
+  
+</mapper>
+
+  
